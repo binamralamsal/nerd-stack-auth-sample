@@ -14,8 +14,9 @@ const app = new Elysia({
   cookie: {
     httpOnly: true,
     secure: true,
-    secrets: env.COOKIE_SIGNATURE,
-    sign: ["accessToken", "refreshToken"],
+    // Commented due to bug in Elysiajs: https://github.com/elysiajs/elysia/issues/706
+    // secrets: env.COOKIE_SIGNATURE,
+    // sign: ["accessToken", "refreshToken"],
   },
 })
   .use(setup)
@@ -34,8 +35,9 @@ const app = new Elysia({
     if (code === "NOT_FOUND")
       return { error: "Route not found :(", status: STATUS.ERROR };
 
-    if (code === "INVALID_COOKIE_SIGNATURE")
-      return { error: "Your cookies has been altered", status: STATUS.ERROR };
+    // Commented because of bug in Elysiajs: https://github.com/elysiajs/elysia/issues/707
+    // if (code === "INVALID_COOKIE_SIGNATURE")
+    //   return { error: "Your cookies has been altered", status: STATUS.ERROR };
 
     set.status = 500;
     return { error: "Internal Server Error", status: STATUS.ERROR };
