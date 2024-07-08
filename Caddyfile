@@ -1,0 +1,11 @@
+{
+	local_certs
+}
+
+binamralamsal.com {
+	reverse_proxy 127.0.0.1:3000
+}
+
+api.binamralamsal.com {
+	reverse_proxy 127.0.0.1:3001
+}

@@ -13,9 +13,9 @@ export const auth = new Elysia({ name: "auth" })
     async ({ cookie: { accessToken, refreshToken }, error, jwt }) => {
       try {
         if (accessToken.value) {
-          if (typeof accessToken.value !== "string") throw new Error();
-
           const decodedAccessToken = await jwt.verify(accessToken.value);
+
+          if (!decodedAccessToken) throw new Error();
           const validatedAccessToken = accessTokenDTO.parse(decodedAccessToken);
 
           const user = await db.query.usersTable.findFirst({
@@ -26,9 +26,9 @@ export const auth = new Elysia({ name: "auth" })
 
           return { user };
         } else {
-          if (typeof refreshToken.value !== "string") throw new Error();
-
           const decodedRefreshToken = await jwt.verify(refreshToken.value);
+          if (!decodedRefreshToken) throw new Error();
+
           const validatedRefreshToken =
             refreshTokenDTO.parse(decodedRefreshToken);
 
@@ -49,6 +49,7 @@ export const auth = new Elysia({ name: "auth" })
               sessionId: currentSession.id,
               userId: user.id,
             }),
+            maxAge: 60,
           });
           refreshToken.set({
             value: await jwt.sign({ sessionId: currentSession.id }),

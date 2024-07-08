@@ -11,6 +11,7 @@ export const env = createEnv({
     LOG_LEVEL: z
       .enum(["debug", "error", "fatal", "info", "silent", "trace", "warn"])
       .default("info"),
+    FRONTEND_DOMAIN: z.string().default("localhost"),
   },
   runtimeEnv: process.env,
 });

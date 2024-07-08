@@ -21,7 +21,7 @@
     "@types/node": "^20.14.9",
     "bun-types": "^1.1.17",
     "drizzle-orm": "^0.31.2",
-    "elysia": "^1.0.26",
+    "elysia": "^1.0.27",
     "elysia-compression": "^0.0.7",
     "elysia-helmet": "^2.0.0",
     "elysia-ip": "^1.0.7",

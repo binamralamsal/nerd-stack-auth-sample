@@ -11,11 +11,14 @@ import { db } from "../../drizzle/db";
 import { eq } from "drizzle-orm";
 import { sessionsTable } from "../../drizzle/schema";
 import { STATUS } from "../../types";
-import { env } from "process";
+import { env } from "../../config/env";
+import { auth } from "../../middlewares/auth.middleware";
 
 const { PostgresError } = postgres;
 
-export const authControllers = new Elysia()
+export const authControllers = new Elysia({
+  prefix: "/auth",
+})
   .use(setup)
 
   .post(
@@ -73,6 +76,7 @@ export const authControllers = new Elysia()
 
       accessToken.set({
         value: await jwt.sign({ sessionId: session.id, userId }),
+        maxAge: 60,
       });
       refreshToken.set({
         value: await jwt.sign({ sessionId: session.id }),
@@ -89,16 +93,19 @@ export const authControllers = new Elysia()
       detail: {
         tags: ["Auth"],
       },
-      secrets: env.COOKIE_SIGNATURE,
-      sign: ["accessToken", "refreshToken"],
     }
   )
 
   .post(
     "/logout",
-    async ({ cookie: { refreshToken, accessToken }, jwt }) => {
+    async ({ cookie: { refreshToken, accessToken }, jwt, error }) => {
       const decodedRefreshToken = await jwt.verify(refreshToken.value);
-      console.log(decodedRefreshToken);
+      if (!decodedRefreshToken)
+        return error(401, {
+          error: "User is not logged in",
+          status: STATUS.ERROR,
+        });
+
       const validatedRefreshToken = refreshTokenDTO.parse(decodedRefreshToken);
 
       await db
@@ -110,11 +117,9 @@ export const authControllers = new Elysia()
       return { message: "Logged out successfully!", status: STATUS.SUCCESS };
     },
     {
-      cookie: "tokenCookie",
       detail: {
         tags: ["Auth"],
       },
-      secrets: env.COOKIE_SIGNATURE,
-      sign: ["accessToken", "refreshToken"],
     }
-  );
+  )
+  .guard({}, (app) => app.use(auth).get("/me", () => "Hello you"));

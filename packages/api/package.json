@@ -13,6 +13,6 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "server": "workspace:*",
-    "elysia": "^1.0.26"
+    "elysia": "^1.0.27"
   }
 }

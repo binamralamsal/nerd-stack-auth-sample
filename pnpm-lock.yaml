@@ -109,7 +109,7 @@ importers:
         specifier: ^0.31.2
         version: 0.31.2(@types/react@18.2.61)(bun-types@1.1.17)(postgres@3.4.4)(react@18.2.0)
       elysia:
-        specifier: ^1.0.26
+        specifier: ^1.0.27
         version: 1.0.27(@sinclair/typebox@0.32.34)(openapi-types@12.1.3)(typescript@5.4.5)
       elysia-compression:
         specifier: ^0.0.7
@@ -156,7 +156,7 @@ importers:
         specifier: workspace:*
         version: link:../config-typescript
       elysia:
-        specifier: ^1.0.26
+        specifier: ^1.0.27
         version: 1.0.27(@sinclair/typebox@0.32.34)(openapi-types@12.1.3)(typescript@5.4.5)
       server:
         specifier: workspace:*
