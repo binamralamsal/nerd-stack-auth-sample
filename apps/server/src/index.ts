@@ -7,7 +7,7 @@ import { STATUS } from "./types";
 import { rateLimit } from "elysia-rate-limit";
 import { ElysiaLogging } from "@otherguy/elysia-logging";
 import { logger } from "./libs/pino";
-import { cors } from "./middlewares/cors.middleware";
+import cors from "@elysiajs/cors";
 
 const app = new Elysia({
   cookie: {
