@@ -87,13 +87,26 @@ export async function logUserIn({
   sessionId: number;
   userId: number;
 }) {
+  const SECONDS_PER_MINUTE = 60;
+  const MINUTES_PER_HOUR = 60;
+  const HOURS_PER_DAY = 24;
+  const DAYS_PER_MONTH = 30;
+
+  const accessTokenExpiry = SECONDS_PER_MINUTE;
+  const refreshTokenExpiry =
+    DAYS_PER_MONTH * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
+
   accessToken.set({
-    value: await jwt.sign({ sessionId: sessionId, userId, exp: 60 }),
-    maxAge: 60,
+    value: await jwt.sign({
+      sessionId: sessionId,
+      userId,
+      exp: accessTokenExpiry,
+    }),
+    maxAge: accessTokenExpiry,
   });
   refreshToken.set({
-    value: await jwt.sign({ sessionId: sessionId }),
-    maxAge: 30 * 24 * 60 * 60,
+    value: await jwt.sign({ sessionId: sessionId, exp: refreshTokenExpiry }),
+    maxAge: refreshTokenExpiry,
   });
 }
 
