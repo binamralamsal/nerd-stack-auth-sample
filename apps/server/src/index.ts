@@ -37,13 +37,19 @@ const app = new Elysia({
       },
     })
   )
-  .onError(({ code, error }) => {
+  .onError(({ code, error, set }) => {
     if (code === "NOT_FOUND")
       return { error: "Route not found :(", status: STATUS.ERROR };
 
     // Commented because of bug in Elysiajs: https://github.com/elysiajs/elysia/issues/707
     // if (code === "INVALID_COOKIE_SIGNATURE")
     //   return { error: "Your cookies has been altered", status: STATUS.ERROR };
+    console.log(code);
+
+    if (code === "HTTP_ERROR" || code === "UNAUTHORIZED_ERROR") {
+      set.status = error.statusCode;
+      return { error: error.message, status: STATUS.ERROR };
+    }
 
     if (code === "VALIDATION") return error.message;
     return { error: "Internal Server Error", status: STATUS.ERROR };

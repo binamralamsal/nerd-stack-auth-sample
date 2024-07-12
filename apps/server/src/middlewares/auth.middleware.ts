@@ -1,68 +1,58 @@
 import Elysia from "elysia";
 import { setup } from "../setup";
 import { accessTokenDTO, refreshTokenDTO } from "../modules/auth/auth.dtos";
-import { db } from "../drizzle/db";
-import { eq } from "drizzle-orm";
-import { sessionsTable, usersTable } from "../drizzle/schema";
-import { STATUS } from "../types";
+import { UnauthorizedError } from "../errors/unauthorized-error";
+import {
+  findSessionById,
+  findUserById,
+  logUserIn,
+} from "../modules/auth/auth.services";
 
 export const auth = new Elysia({ name: "auth" })
   .use(setup)
   .derive(
     { as: "global" },
-    async ({ cookie: { accessToken, refreshToken }, error, jwt }) => {
+    async ({ cookie: { accessToken, refreshToken }, jwt }) => {
       try {
         if (accessToken.value) {
           const decodedAccessToken = await jwt.verify(accessToken.value);
 
-          if (!decodedAccessToken) throw new Error();
+          if (!decodedAccessToken) throw new UnauthorizedError();
           const validatedAccessToken = accessTokenDTO.parse(decodedAccessToken);
 
-          const user = await db.query.usersTable.findFirst({
-            where: eq(usersTable.id, validatedAccessToken.userId),
-          });
-
-          if (!user) throw new Error();
+          const user = await findUserById(validatedAccessToken.userId);
+          if (!user) throw new UnauthorizedError();
 
           return { user };
         } else {
           const decodedRefreshToken = await jwt.verify(refreshToken.value);
-          if (!decodedRefreshToken) throw new Error();
+          if (!decodedRefreshToken) throw new UnauthorizedError();
 
           const validatedRefreshToken =
             refreshTokenDTO.parse(decodedRefreshToken);
 
-          const currentSession = await db.query.sessionsTable.findFirst({
-            where: eq(sessionsTable.id, validatedRefreshToken.sessionId),
-          });
+          const currentSession = await findSessionById(
+            validatedRefreshToken.sessionId
+          );
 
-          if (!currentSession || !currentSession?.valid) throw new Error();
+          if (!currentSession || !currentSession?.valid)
+            throw new UnauthorizedError();
 
-          const user = await db.query.usersTable.findFirst({
-            where: eq(usersTable.id, currentSession.userId),
-          });
+          const user = await findUserById(currentSession.userId);
+          if (!user) throw new UnauthorizedError();
 
-          if (!user) throw new Error();
-
-          accessToken.set({
-            value: await jwt.sign({
-              sessionId: currentSession.id,
-              userId: user.id,
-            }),
-            maxAge: 60,
-          });
-          refreshToken.set({
-            value: await jwt.sign({ sessionId: currentSession.id }),
-            maxAge: 30 * 24 * 60 * 60,
+          await logUserIn({
+            jwt,
+            accessToken,
+            refreshToken,
+            sessionId: currentSession.id,
+            userId: user.id,
           });
 
           return { user };
         }
       } catch (err) {
-        return error(401, {
-          error: "User not logged in",
-          status: STATUS.ERROR,
-        });
+        throw new UnauthorizedError();
       }
     }
   );

@@ -1,20 +1,17 @@
-import { authorizeUser, createSession, registerUser } from "./auth.services";
 import {
-  authorizeUserValidator,
-  refreshTokenDTO,
-  registerUserValidator,
-} from "./auth.dtos";
+  authorizeUser,
+  createSession,
+  logoutUser,
+  logUserIn,
+  registerUser,
+} from "./auth.services";
+import { authorizeUserValidator, registerUserValidator } from "./auth.dtos";
 import Elysia, { t } from "elysia";
-import postgres from "postgres";
 import { setup } from "../../setup";
-import { db } from "../../drizzle/db";
-import { eq } from "drizzle-orm";
-import { sessionsTable } from "../../drizzle/schema";
 import { STATUS } from "../../types";
-import { env } from "../../config/env";
 import { auth } from "../../middlewares/auth.middleware";
-
-const { PostgresError } = postgres;
+import { HTTPError } from "../../errors/http-error";
+import { UnauthorizedError } from "../../errors/unauthorized-error";
 
 export const authControllers = new Elysia({
   prefix: "/auth",
@@ -23,24 +20,33 @@ export const authControllers = new Elysia({
 
   .post(
     "/register",
-    async ({ body, error }) => {
-      try {
-        await registerUser(body);
+    async ({
+      body,
+      ip,
+      headers,
+      jwt,
+      set,
+      cookie: { accessToken, refreshToken },
+    }) => {
+      const { id: userId } = await registerUser(body);
+      const { id: sessionId } = await createSession(userId, {
+        ip,
+        userAgent: headers["user-agent"] || "",
+      });
 
-        return {
-          message: "Registered User Successfully",
-          status: STATUS.SUCCESS,
-        };
-      } catch (err) {
-        if (err instanceof PostgresError && err.code === "23505") {
-          return error(401, {
-            error: "User with that Email address already exists",
-            status: STATUS.ERROR,
-          });
-        }
+      await logUserIn({
+        jwt,
+        accessToken,
+        refreshToken,
+        sessionId,
+        userId,
+      });
 
-        throw err;
-      }
+      set.status = 201;
+      return {
+        message: "Registered User Successfully",
+        status: STATUS.SUCCESS,
+      };
     },
     {
       body: registerUserValidator,
@@ -55,7 +61,6 @@ export const authControllers = new Elysia({
     async ({
       body,
       ip,
-      error,
       headers,
       jwt,
       cookie: { accessToken, refreshToken },
@@ -63,25 +68,21 @@ export const authControllers = new Elysia({
       const { isAuthorized, userId } = await authorizeUser(body);
 
       if (!isAuthorized || !userId)
-        return error(401, {
-          error: "Invalid username or password",
-          status: STATUS.ERROR,
-        });
+        throw new HTTPError("Invalid username or password", 401);
 
-      const connectionInformation = {
+      const { id: sessionId } = await createSession(userId, {
         ip,
         userAgent: headers["user-agent"] || "",
-      };
-      const session = (await createSession(userId, connectionInformation))[0];
+      });
 
-      accessToken.set({
-        value: await jwt.sign({ sessionId: session.id, userId }),
-        maxAge: 60,
+      await logUserIn({
+        jwt,
+        accessToken,
+        refreshToken,
+        sessionId,
+        userId,
       });
-      refreshToken.set({
-        value: await jwt.sign({ sessionId: session.id }),
-        maxAge: 30 * 24 * 60 * 60,
-      });
+
       return {
         message: "Authorized User Successfully",
         status: STATUS.SUCCESS,
@@ -100,19 +101,9 @@ export const authControllers = new Elysia({
     "/logout",
     async ({ cookie: { refreshToken, accessToken }, jwt, error }) => {
       const decodedRefreshToken = await jwt.verify(refreshToken.value);
-      if (!decodedRefreshToken)
-        return error(401, {
-          error: "User is not logged in",
-          status: STATUS.ERROR,
-        });
+      if (!decodedRefreshToken) throw new UnauthorizedError();
 
-      const validatedRefreshToken = refreshTokenDTO.parse(decodedRefreshToken);
-
-      await db
-        .delete(sessionsTable)
-        .where(eq(sessionsTable.id, validatedRefreshToken.sessionId));
-      refreshToken.remove();
-      accessToken.remove();
+      await logoutUser(decodedRefreshToken, accessToken, refreshToken);
 
       return { message: "Logged out successfully!", status: STATUS.SUCCESS };
     },
@@ -122,4 +113,6 @@ export const authControllers = new Elysia({
       },
     }
   )
-  .guard({}, (app) => app.use(auth).get("/me", () => "Hello you"));
+
+  .use(auth)
+  .get("/me", () => "Hello you");
