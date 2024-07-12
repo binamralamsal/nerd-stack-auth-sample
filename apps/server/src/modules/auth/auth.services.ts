@@ -3,11 +3,12 @@ import { db } from "../../drizzle/db";
 import { sessionsTable, usersTable } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import crypto from "node:crypto";
-import { refreshTokenDTO } from "./auth.dtos";
+import { accessTokenDTO, refreshTokenDTO } from "./auth.dtos";
 import { Cookie } from "elysia";
 import { JWT } from "../../types";
 import postgres from "postgres";
 import { HTTPError } from "../../errors/http-error";
+import { UnauthorizedError } from "../../errors/unauthorized-error";
 
 const { PostgresError } = postgres;
 
@@ -134,4 +135,50 @@ export async function findSessionById(sessionId: number) {
   return await db.query.sessionsTable.findFirst({
     where: eq(sessionsTable.id, sessionId),
   });
+}
+
+export async function getUserFromAccessToken(
+  accessToken: Cookie<any>,
+  jwt: JWT
+) {
+  const decodedAccessToken = await jwt.verify(accessToken.value);
+
+  if (!decodedAccessToken) throw new UnauthorizedError();
+  const validatedAccessToken = accessTokenDTO.parse(decodedAccessToken);
+
+  const user = await findUserById(validatedAccessToken.userId);
+  if (!user) throw new UnauthorizedError();
+
+  return user;
+}
+
+export async function refreshTokens({
+  jwt,
+  refreshToken,
+  accessToken,
+}: {
+  jwt: JWT;
+  accessToken: Cookie<any>;
+  refreshToken: Cookie<any>;
+}) {
+  const decodedRefreshToken = await jwt.verify(refreshToken.value);
+  if (!decodedRefreshToken) throw new UnauthorizedError();
+
+  const validatedRefreshToken = refreshTokenDTO.parse(decodedRefreshToken);
+  const currentSession = await findSessionById(validatedRefreshToken.sessionId);
+
+  if (!currentSession || !currentSession?.valid) throw new UnauthorizedError();
+
+  const user = await findUserById(currentSession.userId);
+  if (!user) throw new UnauthorizedError();
+
+  await logUserIn({
+    jwt,
+    accessToken,
+    refreshToken,
+    sessionId: currentSession.id,
+    userId: user.id,
+  });
+
+  return user;
 }

@@ -3,6 +3,7 @@ import {
   createSession,
   logoutUser,
   logUserIn,
+  refreshTokens,
   registerUser,
 } from "./auth.services";
 import { authorizeUserValidator, registerUserValidator } from "./auth.dtos";

@@ -148,18 +148,20 @@ export default function HomePage() {
         </button>
       </form>
 
-      <button
-        onClick={handleLogout}
-        className="w-full max-w-md bg-red-500 text-white p-2 rounded"
-      >
-        Logout
-      </button>
-      <button
-        onClick={handleGetMe}
-        className="w-full max-w-md bg-green-500 text-white p-2 rounded"
-      >
-        Get Me
-      </button>
+      <div className="w-full max-w-md space-y-3">
+        <button
+          onClick={handleLogout}
+          className="w-full bg-red-500 text-white p-2 rounded"
+        >
+          Logout
+        </button>
+        <button
+          onClick={handleGetMe}
+          className="w-full bg-green-500 text-white p-2 rounded"
+        >
+          Get Me
+        </button>
+      </div>
     </div>
   );
 }
