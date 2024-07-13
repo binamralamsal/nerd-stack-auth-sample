@@ -1,13 +1,13 @@
-import { swagger } from "@elysiajs/swagger";
-import { Elysia } from "elysia";
-import { env } from "./config/env";
-import { setup } from "./setup";
-import { authControllers } from "./modules/auth/auth.controllers";
-import { STATUS } from "./types";
-import { rateLimit } from "elysia-rate-limit";
-import { ElysiaLogging } from "@otherguy/elysia-logging";
-import { logger } from "./libs/pino";
 import cors from "@elysiajs/cors";
+import { swagger } from "@elysiajs/swagger";
+import { ElysiaLogging } from "@otherguy/elysia-logging";
+import { Elysia } from "elysia";
+
+import { env } from "./config/env";
+import { logger } from "./libs/pino";
+import { authControllers } from "./modules/auth/auth.controllers";
+import { setup } from "./setup";
+import { STATUS } from "./types";
 
 const app = new Elysia({
   cookie: {
@@ -21,13 +21,13 @@ const app = new Elysia({
 })
   .use(
     cors({
-      origin: ["https://binamralamsal.com"],
+      origin: ["https://binamralamsal.com", "localhost"],
       credentials: true,
       allowedHeaders: ["Content-Type"],
     })
   )
   .use(setup)
-  .use(rateLimit())
+  // .use(rateLimit())
   .use(ElysiaLogging(logger))
   .use(
     swagger({

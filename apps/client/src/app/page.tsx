@@ -1,7 +1,8 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
 import { api } from "@repo/api";
+import type { ChangeEvent, FormEvent } from "react";
+import { useState } from "react";
 
 export default function HomePage() {
   const [loginEmail, setLoginEmail] = useState("");
@@ -16,9 +17,6 @@ export default function HomePage() {
     const { data, error } = await api.auth.authorize.post({
       email: loginEmail,
       password: loginPassword,
-      $fetch: {
-        credentials: "include",
-      },
     });
 
     if (error) {
@@ -65,39 +63,41 @@ export default function HomePage() {
   }
 
   function handleChange(setter: React.Dispatch<React.SetStateAction<string>>) {
-    return (e: ChangeEvent<HTMLInputElement>) => setter(e.target.value);
+    return (e: ChangeEvent<HTMLInputElement>) => {
+      setter(e.target.value);
+    };
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
       <form
-        onSubmit={handleLogin}
         className="bg-white p-6 rounded shadow-md w-full max-w-md mb-8"
+        onSubmit={handleLogin}
       >
         <h2 className="text-2xl font-bold mb-4">Login</h2>
         <label className="block mb-2">
           Email:
           <input
-            type="email"
-            value={loginEmail}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
             onChange={handleChange(setLoginEmail)}
             required
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+            type="email"
+            value={loginEmail}
           />
         </label>
         <label className="block mb-4">
           Password:
           <input
-            type="password"
-            value={loginPassword}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
             onChange={handleChange(setLoginPassword)}
             required
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+            type="password"
+            value={loginPassword}
           />
         </label>
         <button
-          type="submit"
           className="w-full bg-blue-500 text-white p-2 rounded"
+          type="submit"
         >
           Login
         </button>
@@ -106,43 +106,43 @@ export default function HomePage() {
       <hr className="w-full max-w-md my-8" />
 
       <form
-        onSubmit={handleRegister}
         className="bg-white p-6 rounded shadow-md w-full max-w-md mb-8"
+        onSubmit={handleRegister}
       >
         <h2 className="text-2xl font-bold mb-4">Register</h2>
         <label className="block mb-2">
           Name:
           <input
-            type="text"
-            value={registerName}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
             onChange={handleChange(setRegisterName)}
             required
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+            type="text"
+            value={registerName}
           />
         </label>
         <label className="block mb-2">
           Email:
           <input
-            type="email"
-            value={registerEmail}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
             onChange={handleChange(setRegisterEmail)}
             required
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+            type="email"
+            value={registerEmail}
           />
         </label>
         <label className="block mb-4">
           Password:
           <input
-            type="password"
-            value={registerPassword}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
             onChange={handleChange(setRegisterPassword)}
             required
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+            type="password"
+            value={registerPassword}
           />
         </label>
         <button
-          type="submit"
           className="w-full bg-green-500 text-white p-2 rounded"
+          type="submit"
         >
           Register
         </button>
@@ -150,14 +150,16 @@ export default function HomePage() {
 
       <div className="w-full max-w-md space-y-3">
         <button
-          onClick={handleLogout}
           className="w-full bg-red-500 text-white p-2 rounded"
+          onClick={handleLogout}
+          type="button"
         >
           Logout
         </button>
         <button
-          onClick={handleGetMe}
           className="w-full bg-green-500 text-white p-2 rounded"
+          onClick={handleGetMe}
+          type="button"
         >
           Get Me
         </button>

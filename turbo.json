@@ -14,12 +14,6 @@
     },
     "clean": {
       "cache": false
-    },
-    "migrate": {
-      "dependsOn": []
-    },
-    "studio": {
-      "dependsOn": []
     }
   }
 }

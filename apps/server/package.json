@@ -33,7 +33,6 @@
   },
   "devDependencies": {
     "drizzle-kit": "^0.22.8",
-    "eslint": "^9.6.0",
     "typescript": "^5.5.3"
   }
 }

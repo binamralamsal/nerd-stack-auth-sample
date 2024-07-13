@@ -1,14 +1,17 @@
-import { JWTPayloadSpec } from "@elysiajs/jwt";
+import crypto from "node:crypto";
+
+import type { JWTPayloadSpec } from "@elysiajs/jwt";
+import { eq } from "drizzle-orm";
+import type { Cookie } from "elysia";
+import postgres from "postgres";
+
 import { db } from "../../drizzle/db";
 import { sessionsTable, usersTable } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
-import crypto from "node:crypto";
-import { accessTokenDTO, refreshTokenDTO } from "./auth.dtos";
-import { Cookie } from "elysia";
-import { JWT } from "../../types";
-import postgres from "postgres";
 import { HTTPError } from "../../errors/http-error";
 import { UnauthorizedError } from "../../errors/unauthorized-error";
+import type { JWT } from "../../types";
+
+import { accessTokenDTO, refreshTokenDTO } from "./auth.dtos";
 
 const { PostgresError } = postgres;
 
@@ -99,14 +102,14 @@ export async function logUserIn({
 
   accessToken.set({
     value: await jwt.sign({
-      sessionId: sessionId,
+      sessionId,
       userId,
       exp: accessTokenExpiry,
     }),
     maxAge: accessTokenExpiry,
   });
   refreshToken.set({
-    value: await jwt.sign({ sessionId: sessionId, exp: refreshTokenExpiry }),
+    value: await jwt.sign({ sessionId, exp: refreshTokenExpiry }),
     maxAge: refreshTokenExpiry,
   });
 }
@@ -126,13 +129,13 @@ export async function logoutUser(
 }
 
 export async function findUserById(userId: number) {
-  return await db.query.usersTable.findFirst({
+  return db.query.usersTable.findFirst({
     where: eq(usersTable.id, userId),
   });
 }
 
 export async function findSessionById(sessionId: number) {
-  return await db.query.sessionsTable.findFirst({
+  return db.query.sessionsTable.findFirst({
     where: eq(sessionsTable.id, sessionId),
   });
 }
@@ -146,10 +149,7 @@ export async function getUserFromAccessToken(
   if (!decodedAccessToken) throw new UnauthorizedError();
   const validatedAccessToken = accessTokenDTO.parse(decodedAccessToken);
 
-  const user = await findUserById(validatedAccessToken.userId);
-  if (!user) throw new UnauthorizedError();
-
-  return user;
+  return validatedAccessToken.userId;
 }
 
 export async function refreshTokens({
@@ -167,7 +167,7 @@ export async function refreshTokens({
   const validatedRefreshToken = refreshTokenDTO.parse(decodedRefreshToken);
   const currentSession = await findSessionById(validatedRefreshToken.sessionId);
 
-  if (!currentSession || !currentSession?.valid) throw new UnauthorizedError();
+  if (!currentSession || !currentSession.valid) throw new UnauthorizedError();
 
   const user = await findUserById(currentSession.userId);
   if (!user) throw new UnauthorizedError();

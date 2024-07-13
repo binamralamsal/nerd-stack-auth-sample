@@ -1,18 +1,19 @@
+import { Elysia } from "elysia";
+
+import { HTTPError } from "../../errors/http-error";
+import { UnauthorizedError } from "../../errors/unauthorized-error";
+import { auth } from "../../middlewares/auth.middleware";
+import { setup } from "../../setup";
+import { STATUS } from "../../types";
+
+import { authorizeUserValidator, registerUserValidator } from "./auth.dtos";
 import {
   authorizeUser,
   createSession,
   logoutUser,
   logUserIn,
-  refreshTokens,
   registerUser,
 } from "./auth.services";
-import { authorizeUserValidator, registerUserValidator } from "./auth.dtos";
-import Elysia, { t } from "elysia";
-import { setup } from "../../setup";
-import { STATUS } from "../../types";
-import { auth } from "../../middlewares/auth.middleware";
-import { HTTPError } from "../../errors/http-error";
-import { UnauthorizedError } from "../../errors/unauthorized-error";
 
 export const authControllers = new Elysia({
   prefix: "/auth",
@@ -100,7 +101,7 @@ export const authControllers = new Elysia({
 
   .post(
     "/logout",
-    async ({ cookie: { refreshToken, accessToken }, jwt, error }) => {
+    async ({ cookie: { refreshToken, accessToken }, jwt }) => {
       const decodedRefreshToken = await jwt.verify(refreshToken.value);
       if (!decodedRefreshToken) throw new UnauthorizedError();
 

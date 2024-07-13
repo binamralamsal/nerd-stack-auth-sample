@@ -11,7 +11,6 @@ const project = resolve(process.cwd(), "tsconfig.json");
  *
  */
 
-/** @type {import("eslint").Linter.Config} */
 module.exports = {
   extends: [
     ...[
@@ -25,7 +24,7 @@ module.exports = {
     "plugin:import/recommended",
     "plugin:import/typescript",
   ],
-  plugins: ["only-warn", "import"],
+  plugins: ["import"],
   parserOptions: {
     project,
   },
@@ -46,6 +45,9 @@ module.exports = {
   ignorePatterns: ["node_modules/", "dist/"],
   // add rules configurations here
   rules: {
+    "@typescript-eslint/no-misused-promises": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unsafe-argument": "off",
     "@typescript-eslint/no-unsafe-call": "off",
     "import/no-default-export": "off",
     "@typescript-eslint/explicit-function-return-type": "off",

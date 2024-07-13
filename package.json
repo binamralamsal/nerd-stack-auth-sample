@@ -6,20 +6,20 @@
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "clean": "turbo clean",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "migrate": "turbo migrate",
-    "generate": "pnpm --filter=server generate:migrations",
-    "studio": "turbo studio"
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "prettier": "^3.3.2",
-    "prettier-plugin-tailwindcss": "^0.6.5",
-    "turbo": "^2.0.6",
-    "typescript": "^5.5.3"
+    "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.5.11",
+    "turbo": "^2.0.6"
   },
-  "packageManager": "pnpm@8.15.6",
   "engines": {
     "node": ">=18"
   },
-  "name": "nerd-stack"
+  "name": "nerd-stack-auth-starter",
+  "packageManager": "bun@1.1.18",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }

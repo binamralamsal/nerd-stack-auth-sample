@@ -1,5 +1,6 @@
+import { env } from "node:process";
+
 import { pino } from "pino";
-import { env } from "process";
 
 export const logger = pino({
   level: env.LOG_LEVEL,

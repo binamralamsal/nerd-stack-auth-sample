@@ -11,14 +11,16 @@ const project = resolve(process.cwd(), "tsconfig.json");
  *
  */
 
-/** @type {import("eslint").Linter.Config} */
 module.exports = {
   extends: [
-    "@vercel/style-guide/eslint/node",
-    "@vercel/style-guide/eslint/typescript",
+    ...[
+      "@vercel/style-guide/eslint/node",
+      "@vercel/style-guide/eslint/typescript",
+    ].map(require.resolve),
+    "turbo",
     "plugin:import/recommended",
     "plugin:import/typescript",
-  ].map(require.resolve),
+  ],
   plugins: ["import"],
   parserOptions: {
     project,
@@ -38,28 +40,32 @@ module.exports = {
     },
   },
   ignorePatterns: ["node_modules/", "dist/"],
+  // add rules configurations here
   rules: {
-    rules: {
-      "@typescript-eslint/no-unsafe-call": "off",
-      "import/no-default-export": "off",
-      "import/order": [
-        "error",
-        {
-          groups: [
-            "builtin",
-            "external",
-            "internal",
-            "parent",
-            "sibling",
-            "index",
-          ],
-          "newlines-between": "always",
-          alphabetize: {
-            order: "asc",
-            caseInsensitive: true,
-          },
+    "@typescript-eslint/no-misused-promises": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unsafe-argument": "off",
+    "@typescript-eslint/no-unsafe-call": "off",
+    "import/no-default-export": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "no-console": "off",
+    "import/order": [
+      "error",
+      {
+        groups: [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index",
+        ],
+        "newlines-between": "always",
+        alphabetize: {
+          order: "asc",
+          caseInsensitive: true,
         },
-      ],
-    },
+      },
+    ],
   },
 };
