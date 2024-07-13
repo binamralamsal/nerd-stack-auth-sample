@@ -24,7 +24,7 @@ export default async function middleware(request: NextRequest) {
     const parsedCookies = parseCookies(responseCookie);
     if (responseCookie) {
       const response = NextResponse.redirect(request.url);
-      console.log(parsedCookies.accessToken.attributes);
+
       response.cookies.set(
         "accessToken",
         parsedCookies.accessToken.value,
