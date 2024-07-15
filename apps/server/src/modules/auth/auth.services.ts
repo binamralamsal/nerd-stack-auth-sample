@@ -5,11 +5,11 @@ import { eq } from "drizzle-orm";
 import type { Cookie } from "elysia";
 import postgres from "postgres";
 
-import { db } from "../../drizzle/db";
-import { sessionsTable, usersTable } from "../../drizzle/schema";
-import { HTTPError } from "../../errors/http-error";
-import { UnauthorizedError } from "../../errors/unauthorized-error";
-import type { JWT } from "../../types";
+import { db } from "@/drizzle/db";
+import { sessionsTable, usersTable } from "@/drizzle/schema";
+import { HTTPError } from "@/errors/http-error";
+import { UnauthorizedError } from "@/errors/unauthorized-error";
+import type { JWT } from "@/types";
 
 import { accessTokenDTO, refreshTokenDTO } from "./auth.dtos";
 

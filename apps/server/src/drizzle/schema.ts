@@ -27,7 +27,7 @@ export const usersTable = pgTable(
       .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
-    uniqueEmailIndex: uniqueIndex("email_idx").on(table.email),
+    uniqueEmailIndex: uniqueIndex("email_idx").on(sql`lower(${table.email})`),
   })
 );
 

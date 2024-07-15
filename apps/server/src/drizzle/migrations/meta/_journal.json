@@ -15,6 +15,13 @@
       "when": 1720266334981,
       "tag": "0001_odd_snowbird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1721027129038,
+      "tag": "0002_amused_veda",
+      "breakpoints": true
     }
   ]
 }

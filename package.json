@@ -6,7 +6,10 @@
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "clean": "turbo clean",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "studio": "bun --filter server studio",
+    "migrate": "bun --filter server migrate",
+    "generate": "bun --filter server generate"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

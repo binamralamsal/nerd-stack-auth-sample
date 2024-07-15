@@ -1,10 +1,10 @@
 import { Elysia } from "elysia";
 
-import { HTTPError } from "../../errors/http-error";
-import { UnauthorizedError } from "../../errors/unauthorized-error";
-import { auth } from "../../middlewares/auth.middleware";
-import { setup } from "../../setup";
-import { STATUS } from "../../types";
+import { HTTPError } from "@/errors/http-error";
+import { UnauthorizedError } from "@/errors/unauthorized-error";
+import { auth } from "@/middlewares/auth.middleware";
+import { setup } from "@/setup";
+import { STATUS } from "@/types";
 
 import { authorizeUserValidator, registerUserValidator } from "./auth.dtos";
 import {

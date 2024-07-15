@@ -3,11 +3,11 @@ import { swagger } from "@elysiajs/swagger";
 import { ElysiaLogging } from "@otherguy/elysia-logging";
 import { Elysia } from "elysia";
 
-import { env } from "./config/env";
-import { logger } from "./libs/pino";
-import { authControllers } from "./modules/auth/auth.controllers";
-import { setup } from "./setup";
-import { STATUS } from "./types";
+import { env } from "@/config/env";
+import { logger } from "@/libs/pino";
+import { authControllers } from "@/modules/auth/auth.controllers";
+import { setup } from "@/setup";
+import { STATUS } from "@/types";
 
 const app = new Elysia({
   cookie: {

@@ -5,10 +5,6 @@ export const authorizeUserValidator = t.Object({
   email: t.String({
     format: "email",
     minLength: 1,
-    error: (err) => {
-      console.log(err);
-      return err;
-    },
   }),
   password: t.String({
     minLength: 8,

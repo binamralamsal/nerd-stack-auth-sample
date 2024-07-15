@@ -2,7 +2,7 @@ import { api } from "@repo/api";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { parseCookies } from "./utils/parse-cookies";
+import { parseCookies } from "@/utils/parse-cookies";
 
 export default async function middleware(request: NextRequest) {
   try {
@@ -40,6 +40,7 @@ export default async function middleware(request: NextRequest) {
 
     return NextResponse.next();
   } catch (err) {
+    console.error(err);
     return NextResponse.next();
   }
 }
