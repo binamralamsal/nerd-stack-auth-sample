@@ -6,41 +6,35 @@ import { parseCookies } from "@/utils/parse-cookies";
 
 export default async function middleware(request: NextRequest) {
   try {
-    const accessToken = request.cookies.get("accessToken")?.value;
     const refreshToken = request.cookies.get("refreshToken")?.value;
+    if (!refreshToken) return NextResponse.next();
 
-    if (!refreshToken || (accessToken && !refreshToken))
-      return NextResponse.next();
-
-    const { headers } = (await api.auth.me.get({
+    const response = await api.auth.me.get({
       $headers: {
         Cookie: request.cookies.toString(),
       },
-    })) as unknown as { headers: Headers };
+    });
+    const { headers } = response as unknown as { headers: Headers };
 
     const responseCookie = headers.get("set-cookie");
-    if (!responseCookie) throw new Error();
+    if (!responseCookie) throw new Error("No set-cookie header in response");
 
     const parsedCookies = parseCookies(responseCookie);
-    if (responseCookie) {
-      const response = NextResponse.redirect(request.url);
+    const redirectResponse = NextResponse.redirect(request.url);
 
-      response.cookies.set(
-        "accessToken",
-        parsedCookies.accessToken.value,
-        parsedCookies.accessToken.attributes
-      );
-      response.cookies.set(
-        "refreshToken",
-        parsedCookies.refreshToken.value,
-        parsedCookies.refreshToken.attributes
-      );
-      return response;
-    }
-
-    return NextResponse.next();
+    redirectResponse.cookies.set(
+      "accessToken",
+      parsedCookies.accessToken.value,
+      parsedCookies.accessToken.attributes
+    );
+    redirectResponse.cookies.set(
+      "refreshToken",
+      parsedCookies.refreshToken.value,
+      parsedCookies.refreshToken.attributes
+    );
+    return redirectResponse;
   } catch (err) {
-    console.error(err);
+    console.error("Error in middleware:", err);
     return NextResponse.next();
   }
 }
