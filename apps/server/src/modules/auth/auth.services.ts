@@ -5,14 +5,15 @@ import { eq } from "drizzle-orm";
 import type { Cookie } from "elysia";
 import postgres from "postgres";
 
-import { db } from "@/drizzle/db";
-import { sessionsTable, usersTable } from "@/drizzle/schema";
-import { HTTPError } from "@/errors/http-error";
-import { UnauthorizedError } from "@/errors/unauthorized-error";
-import type { JWT } from "@/types";
+import { db } from "#drizzle/db";
+import { sessionsTable, usersTable } from "#drizzle/schema";
+import { HTTPError } from "#errors/http-error";
+import { UnauthorizedError } from "#errors/unauthorized-error";
+import type { JWT } from "#types";
 
 import { accessTokenDTO, refreshTokenDTO } from "./auth.dtos";
 
+// eslint-disable-next-line import/no-named-as-default-member -- You can't destructure postgres directly
 const { PostgresError } = postgres;
 
 export async function registerUser(data: {
@@ -128,13 +129,13 @@ export async function logoutUser(
   refreshTokenCookie.remove();
 }
 
-export async function findUserById(userId: number) {
+export function findUserById(userId: number) {
   return db.query.usersTable.findFirst({
     where: eq(usersTable.id, userId),
   });
 }
 
-export async function findSessionById(sessionId: number) {
+export function findSessionById(sessionId: number) {
   return db.query.sessionsTable.findFirst({
     where: eq(sessionsTable.id, sessionId),
   });
@@ -167,7 +168,7 @@ export async function refreshTokens({
   const validatedRefreshToken = refreshTokenDTO.parse(decodedRefreshToken);
   const currentSession = await findSessionById(validatedRefreshToken.sessionId);
 
-  if (!currentSession || !currentSession.valid) throw new UnauthorizedError();
+  if (!currentSession?.valid) throw new UnauthorizedError();
 
   const user = await findUserById(currentSession.userId);
   if (!user) throw new UnauthorizedError();

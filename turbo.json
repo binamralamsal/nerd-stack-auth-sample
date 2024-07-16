@@ -12,6 +12,9 @@
       "cache": false,
       "persistent": true
     },
+    "start": {
+      "persistent": true
+    },
     "clean": {
       "cache": false
     }

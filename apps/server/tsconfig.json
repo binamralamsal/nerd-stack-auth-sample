@@ -1,13 +1,4 @@
 {
   "extends": "@repo/typescript-config/base.json",
-  "exclude": ["node_modules"],
-  "compilerOptions": {
-    "composite": true,
-    "noEmit": false,
-    "emitDeclarationOnly": true,
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": ["*"]
-    }
-  }
+  "exclude": ["node_modules"]
 }

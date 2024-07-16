@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
+  "imports": {
+    "#*": [
+      "./src/*.ts"
+    ]
+  },
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",

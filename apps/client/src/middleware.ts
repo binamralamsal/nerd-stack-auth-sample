@@ -1,13 +1,15 @@
-import { api } from "@repo/api";
+import { serverApi as api } from "@repo/api";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { parseCookies } from "@/utils/parse-cookies";
+import { parseCookies } from "#utils/parse-cookies";
 
 export default async function middleware(request: NextRequest) {
   try {
     const refreshToken = request.cookies.get("refreshToken")?.value;
-    if (!refreshToken) return NextResponse.next();
+    const accessToken = request.cookies.get("accessToken")?.value;
+
+    if (accessToken || !refreshToken) return NextResponse.next();
 
     const response = await api.auth.me.get({
       $headers: {
@@ -17,6 +19,7 @@ export default async function middleware(request: NextRequest) {
     const { headers } = response as unknown as { headers: Headers };
 
     const responseCookie = headers.get("set-cookie");
+
     if (!responseCookie) throw new Error("No set-cookie header in response");
 
     const parsedCookies = parseCookies(responseCookie);
@@ -38,3 +41,7 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 }
+
+export const config = {
+  matcher: "/((?!api|static|.*\\..*|_next).*)",
+};

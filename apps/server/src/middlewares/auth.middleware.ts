@@ -1,11 +1,11 @@
 import { Elysia } from "elysia";
 
-import { UnauthorizedError } from "@/errors/unauthorized-error";
+import { UnauthorizedError } from "#errors/unauthorized-error";
 import {
   getUserFromAccessToken,
   refreshTokens,
-} from "@/modules/auth/auth.services";
-import { setup } from "@/setup";
+} from "#modules/auth/auth.services";
+import { setup } from "#setup";
 
 export const auth = new Elysia({ name: "auth" })
   .use(setup)
