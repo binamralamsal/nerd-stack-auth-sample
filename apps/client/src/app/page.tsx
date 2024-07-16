@@ -1,6 +1,6 @@
 "use client";
 
-import { clientApi as api } from "@repo/api";
+import { api } from "@repo/api/client";
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 

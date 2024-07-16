@@ -1,19 +1,20 @@
-import { serverApi as api } from "@repo/api";
+import { api } from "@repo/api/server";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { parseCookies } from "#utils/parse-cookies";
 
-export default async function middleware(request: NextRequest) {
+export default async function middleware({ url }: NextRequest) {
   try {
-    const refreshToken = request.cookies.get("refreshToken")?.value;
-    const accessToken = request.cookies.get("accessToken")?.value;
+    const refreshToken = cookies().get("refreshToken")?.value;
+    const accessToken = cookies().get("accessToken")?.value;
 
     if (accessToken || !refreshToken) return NextResponse.next();
 
     const response = await api.auth.me.get({
       $headers: {
-        Cookie: request.cookies.toString(),
+        Cookie: cookies().toString(),
       },
     });
     const { headers } = response as unknown as { headers: Headers };
@@ -23,7 +24,7 @@ export default async function middleware(request: NextRequest) {
     if (!responseCookie) throw new Error("No set-cookie header in response");
 
     const parsedCookies = parseCookies(responseCookie);
-    const redirectResponse = NextResponse.redirect(request.url);
+    const redirectResponse = NextResponse.redirect(url);
 
     redirectResponse.cookies.set(
       "accessToken",

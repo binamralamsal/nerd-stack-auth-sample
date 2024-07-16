@@ -3,12 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    ".": "./src/eden.ts"
+    "./server": "./src/eden-server.ts",
+    "./client": "./src/eden-client.ts"
   },
   "license": "MIT",
   "scripts": {},
   "dependencies": {
-    "@elysiajs/eden": "^1.0.14"
+    "@elysiajs/eden": "^1.0.14",
+    "next": "^14.2.3"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
