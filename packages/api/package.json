@@ -9,8 +9,7 @@
   "license": "MIT",
   "scripts": {},
   "dependencies": {
-    "@elysiajs/eden": "^1.0.14",
-    "next": "^14.2.3"
+    "@elysiajs/eden": "^1.0.14"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
