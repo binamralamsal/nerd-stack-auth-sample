@@ -1,4 +1,14 @@
 {
+  "name": "nerd-stack-auth-starter",
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.5.11",
+    "turbo": "^2.0.6"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "bun@1.1.18",
   "private": true,
   "scripts": {
     "build": "turbo build",
@@ -12,16 +22,6 @@
     "migrate": "bun --filter server migrate",
     "generate": "bun --filter server generate"
   },
-  "devDependencies": {
-    "prettier": "^3.2.5",
-    "prettier-plugin-tailwindcss": "^0.5.11",
-    "turbo": "^2.0.6"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "name": "nerd-stack-auth-starter",
-  "packageManager": "bun@1.1.18",
   "workspaces": [
     "apps/*",
     "packages/*"

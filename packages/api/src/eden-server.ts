@@ -1,5 +1,4 @@
 import { edenTreaty } from "@elysiajs/eden";
-import { cookies } from "next/headers";
 import type { App } from "server";
 
 if (!process.env.SERVER_API) {

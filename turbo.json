@@ -1,4 +1,5 @@
 {
+  "globalEnv": ["FRONTEND_DOMAIN", "NEXT_PUBLIC_CLIENT_API", "SERVER_API"],
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {

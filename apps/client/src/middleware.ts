@@ -1,11 +1,12 @@
 import { api } from "@repo/api/server";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
+import { env } from "#env";
 import { parseCookies } from "#utils/parse-cookies";
 
-export default async function middleware({ url }: NextRequest) {
+export default async function middleware(request: NextRequest) {
   try {
     const refreshToken = cookies().get("refreshToken")?.value;
     const accessToken = cookies().get("accessToken")?.value;
@@ -17,24 +18,40 @@ export default async function middleware({ url }: NextRequest) {
         Cookie: cookies().toString(),
       },
     });
-    const { headers } = response as unknown as { headers: Headers };
 
+    // 400 status code is sent if cookie signature doesn't match
+    if (response.status === 400) {
+      const redirectResponse = NextResponse.redirect(request.url);
+
+      redirectResponse.headers.set(
+        "Set-Cookie",
+        `accessToken=; Max-Age=0; domain=${env.FRONTEND_DOMAIN}`
+      );
+      redirectResponse.headers.set(
+        "Set-Cookie",
+        `refreshToken=; Max-Age=0; domain=${env.FRONTEND_DOMAIN}`
+      );
+
+      return redirectResponse;
+    }
+
+    const { headers } = response as unknown as { headers: Headers };
     const responseCookie = headers.get("set-cookie");
 
     if (!responseCookie) throw new Error("No set-cookie header in response");
 
     const parsedCookies = parseCookies(responseCookie);
-    const redirectResponse = NextResponse.redirect(url);
+    const redirectResponse = NextResponse.redirect(request.url);
 
     redirectResponse.cookies.set(
       "accessToken",
-      parsedCookies.accessToken.value,
-      parsedCookies.accessToken.attributes
+      parsedCookies.accessToken?.value || "",
+      parsedCookies.accessToken?.attributes
     );
     redirectResponse.cookies.set(
       "refreshToken",
-      parsedCookies.refreshToken.value,
-      parsedCookies.refreshToken.attributes
+      parsedCookies.refreshToken?.value || "",
+      parsedCookies.refreshToken?.attributes
     );
     return redirectResponse;
   } catch (err) {

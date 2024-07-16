@@ -12,7 +12,7 @@ interface Cookie {
   attributes: CookieAttributes;
 }
 
-type ParsedCookies = Record<string, Cookie>;
+type ParsedCookies = Record<string, Cookie | undefined>;
 
 export function parseCookies(cookieString: string): ParsedCookies {
   return cookieString.split(", ").reduce((acc: ParsedCookies, cookie) => {

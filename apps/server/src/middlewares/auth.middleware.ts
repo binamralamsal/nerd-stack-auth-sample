@@ -7,7 +7,9 @@ import {
 } from "#modules/auth/auth.services";
 import { setup } from "#setup";
 
-export const auth = new Elysia({ name: "auth" })
+export const auth = new Elysia({
+  name: "auth",
+})
   .use(setup)
   .derive(
     { as: "global" },
