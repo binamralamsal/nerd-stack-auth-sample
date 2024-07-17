@@ -207,10 +207,9 @@ export async function validateVerifyEmail({
   userId: number;
 }) {
   const emailToken = createVerifyEmailToken(email, userId);
-  console.log(emailToken, token);
   const isValid = emailToken === token;
 
-  if (!isValid) throw new HTTPError("Your verification link is invalid!", 401);
+  if (!isValid) throw new HTTPError("Your verification link is invalid!", 400);
 
   await db
     .update(usersTable)
