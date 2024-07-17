@@ -8,5 +8,8 @@
   "devDependencies": {
     "@repo/typescript-config": "*",
     "tailwindcss": "^3.4.1"
+  },
+  "dependencies": {
+    "tailwindcss-animate": "^1.0.7"
   }
 }

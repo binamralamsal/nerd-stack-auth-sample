@@ -1,10 +1,11 @@
 import crypto from "node:crypto";
 
 import type { JWTPayloadSpec } from "@elysiajs/jwt";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Cookie } from "elysia";
 import postgres from "postgres";
 
+import { env } from "#config/env";
 import { db } from "#drizzle/db";
 import { sessionsTable, usersTable } from "#drizzle/schema";
 import { HTTPError } from "#errors/http-error";
@@ -182,4 +183,37 @@ export async function refreshTokens({
   });
 
   return user;
+}
+
+export function createVerifyEmailToken(email: string, userId: number) {
+  const authString = `${env.JWT_SECRET}:${email}:${userId}`;
+  return crypto.createHash("sha256").update(authString).digest("hex");
+}
+
+export function createVerifyEmailLink(email: string, userId: number) {
+  const emailToken = createVerifyEmailToken(email, userId);
+  const uriEncodedEmail = encodeURIComponent(email);
+
+  return `${env.FRONTEND_DOMAIN_WITH_PROTOCOL}/verify?token=${emailToken}&email=${uriEncodedEmail}`;
+}
+
+export async function validateVerifyEmail({
+  email,
+  userId,
+  token,
+}: {
+  token: string;
+  email: string;
+  userId: number;
+}) {
+  const emailToken = createVerifyEmailToken(email, userId);
+  console.log(emailToken, token);
+  const isValid = emailToken === token;
+
+  if (!isValid) throw new HTTPError("Your verification link is invalid!", 401);
+
+  await db
+    .update(usersTable)
+    .set({ emailVerified: true })
+    .where(and(eq(usersTable.id, userId), eq(usersTable.email, email)));
 }

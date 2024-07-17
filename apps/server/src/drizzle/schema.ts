@@ -18,13 +18,11 @@ export const usersTable = pgTable(
     password: text("password").notNull(),
     email: varchar("email", { length: 255 }).notNull(),
     emailVerified: boolean("email_verified").notNull().default(false),
-    createdAt: timestamp("created_at")
-      .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`)
-      .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
+      .$onUpdate(() => new Date()),
   },
   (table) => ({
     uniqueEmailIndex: uniqueIndex("email_idx").on(sql`lower(${table.email})`),
@@ -40,13 +38,11 @@ export const sessionsTable = pgTable("sessions", {
   valid: boolean("valid").notNull().default(true),
   userAgent: text("user_agent"),
   ip: varchar("ip", { length: 45 }),
-  createdAt: timestamp("created_at")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
+    .$onUpdate(() => new Date()),
 });
 
 export const usersRelations = relations(usersTable, ({ many }) => ({

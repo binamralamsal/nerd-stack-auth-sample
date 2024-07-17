@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@repo/api/client";
+import { Button } from "@repo/ui/button";
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 
@@ -95,12 +96,9 @@ export default function HomePage() {
             value={loginPassword}
           />
         </label>
-        <button
-          className="w-full bg-blue-500 text-white p-2 rounded"
-          type="submit"
-        >
+        <Button className="w-full" size="lg">
           Login
-        </button>
+        </Button>
       </form>
 
       <hr className="w-full max-w-md my-8" />
@@ -140,29 +138,30 @@ export default function HomePage() {
             value={registerPassword}
           />
         </label>
-        <button
-          className="w-full bg-green-500 text-white p-2 rounded"
-          type="submit"
-        >
+        <Button className="w-full" size="lg" type="submit">
           Register
-        </button>
+        </Button>
       </form>
 
       <div className="w-full max-w-md space-y-3">
-        <button
-          className="w-full bg-red-500 text-white p-2 rounded"
+        <Button
+          className="w-full"
           onClick={handleLogout}
+          size="lg"
           type="button"
+          variant="destructive"
         >
           Logout
-        </button>
-        <button
-          className="w-full bg-green-500 text-white p-2 rounded"
+        </Button>
+        <Button
+          className="w-full"
           onClick={handleGetMe}
+          size="lg"
           type="button"
+          variant="outline"
         >
           Get Me
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -11,6 +11,16 @@ export const authorizeUserValidator = t.Object({
   }),
 });
 
+export const verifyUserValidator = t.Object({
+  email: t.String({
+    format: "email",
+    minLength: 1,
+  }),
+  token: t.String({
+    minLength: 1,
+  }),
+});
+
 export const registerUserValidator = t.Composite([
   authorizeUserValidator,
   t.Object({

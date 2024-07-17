@@ -4,7 +4,7 @@ import sharedConfig from "@repo/tailwind-config";
 import type { Config } from "tailwindcss";
 
 const config: Pick<Config, "content" | "presets"> = {
-  content: ["./src/app/**/*.tsx"],
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   presets: [sharedConfig],
 };
 

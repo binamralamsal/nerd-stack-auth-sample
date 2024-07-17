@@ -1,4 +1,7 @@
+import "@repo/ui/styles.css";
 import "./globals.css";
+
+import { Toaster } from "@repo/ui/sonner";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
@@ -15,8 +18,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html className="light" lang="en">
       <body className={inter.className}>{children}</body>
+      <Toaster />
     </html>
   );
 }

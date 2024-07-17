@@ -9,3 +9,8 @@ binamralamsal.com {
 api.binamralamsal.com {
 	reverse_proxy 127.0.0.1:3001
 }
+
+# Development Only
+emails.binamralamsal.com {
+	reverse_proxy 127.0.0.1:3002
+}

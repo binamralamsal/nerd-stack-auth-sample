@@ -7,7 +7,6 @@ import { env } from "#config/env";
 import { logger } from "#libs/pino";
 import { authControllers } from "#modules/auth/auth.controllers";
 import { setup } from "#setup";
-import { STATUS } from "#types";
 
 const app = new Elysia({
   cookie: {
@@ -37,23 +36,24 @@ const app = new Elysia({
     })
   )
   .onError(({ code, error, set }) => {
-    if (code === "NOT_FOUND")
-      return { error: "Route not found :(", status: STATUS.ERROR };
+    if (code === "NOT_FOUND") return "Route not found :(";
 
     // Commented because of bug in Elysiajs: https://github.com/elysiajs/elysia/issues/707
-    if (code === "INVALID_COOKIE_SIGNATURE")
-      return { error: "Your cookies has been altered", status: STATUS.ERROR };
+    // if (code === "INVALID_COOKIE_SIGNATURE")
+    //   return { error: "Your cookies has been altered", status: STATUS.ERROR };
 
     if (code === "HTTP_ERROR" || code === "UNAUTHORIZED_ERROR") {
       set.status = error.statusCode;
-      return { error: error.message, status: STATUS.ERROR };
+      return error.message;
     }
 
     if (code === "VALIDATION") return error.message;
-    return { error: "Internal Server Error", status: STATUS.ERROR };
+
+    logger.error(error);
+    return "Internal Server Error";
   })
 
-  .get("/", () => ({ message: "Hello Elysia", status: STATUS.SUCCESS }))
+  .get("/", () => "Hello API Server")
   .use(authControllers)
   .listen(env.PORT);
 
