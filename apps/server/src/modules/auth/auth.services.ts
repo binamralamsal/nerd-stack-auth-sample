@@ -1,20 +1,19 @@
 import crypto from "node:crypto";
 
-import type { JWTPayloadSpec } from "@elysiajs/jwt";
 import { VerifyEmailLink } from "@repo/email";
 import { and, eq } from "drizzle-orm";
 import type { Cookie } from "elysia";
+import { sign, verify, type JwtPayload } from "jsonwebtoken";
 import postgres from "postgres";
 
+import { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from "#config/constants";
 import { env } from "#config/env";
-import { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from "#constants";
 import { db } from "#drizzle/db";
 import { sessionsTable, usersTable } from "#drizzle/schema";
 import { HTTPError } from "#errors/http-error";
 import { UnauthorizedError } from "#errors/unauthorized-error";
 import { logger } from "#libs/pino";
 import { sendEmail } from "#services/send-email";
-import type { JWT } from "#types";
 
 import { accessTokenDTO, refreshTokenDTO } from "./auth.dtos";
 
@@ -93,35 +92,38 @@ export async function createSession(
   )[0];
 }
 
-export async function logUserIn({
-  jwt,
+export function logUserIn({
   accessToken,
   refreshToken,
   sessionId,
   userId,
 }: {
-  jwt: JWT;
   accessToken: Cookie<any>;
   refreshToken: Cookie<any>;
   sessionId: number;
   userId: number;
 }) {
+  const now = Math.floor(Date.now() / 1000);
+
   accessToken.set({
-    value: await jwt.sign({
-      sessionId,
-      userId,
-      exp: ACCESS_TOKEN_EXPIRY,
-    }),
+    value: sign(
+      {
+        sessionId,
+        userId,
+        exp: now + ACCESS_TOKEN_EXPIRY,
+      },
+      env.JWT_SECRET,
+    ),
     maxAge: ACCESS_TOKEN_EXPIRY,
   });
   refreshToken.set({
-    value: await jwt.sign({ sessionId, exp: REFRESH_TOKEN_EXPIRY }),
+    value: sign({ sessionId, exp: now + REFRESH_TOKEN_EXPIRY }, env.JWT_SECRET),
     maxAge: REFRESH_TOKEN_EXPIRY,
   });
 }
 
 export async function logoutUser(
-  refreshToken: Record<string, string | number> & JWTPayloadSpec,
+  refreshToken: string | JwtPayload,
   accessTokenCookie: Cookie<any>,
   refreshTokenCookie: Cookie<any>,
 ) {
@@ -146,47 +148,49 @@ export function findSessionById(sessionId: number) {
   });
 }
 
-export async function getUserFromAccessToken(
-  accessToken: Cookie<any>,
-  jwt: JWT,
-) {
-  const decodedAccessToken = await jwt.verify(accessToken.value);
+export function getUserFromAccessToken(accessToken: Cookie<any>) {
+  try {
+    const decodedAccessToken = verify(accessToken.value, env.JWT_SECRET);
 
-  if (!decodedAccessToken) throw new UnauthorizedError();
-  const validatedAccessToken = accessTokenDTO.parse(decodedAccessToken);
+    const validatedAccessToken = accessTokenDTO.parse(decodedAccessToken);
 
-  return validatedAccessToken.userId;
+    return validatedAccessToken.userId;
+  } catch {
+    throw new UnauthorizedError();
+  }
 }
 
 export async function refreshTokens({
-  jwt,
   refreshToken,
   accessToken,
 }: {
-  jwt: JWT;
   accessToken: Cookie<any>;
   refreshToken: Cookie<any>;
 }) {
-  const decodedRefreshToken = await jwt.verify(refreshToken.value);
-  if (!decodedRefreshToken) throw new UnauthorizedError();
+  try {
+    const decodedRefreshToken = verify(refreshToken.value, env.JWT_SECRET);
 
-  const validatedRefreshToken = refreshTokenDTO.parse(decodedRefreshToken);
-  const currentSession = await findSessionById(validatedRefreshToken.sessionId);
+    const validatedRefreshToken = refreshTokenDTO.parse(decodedRefreshToken);
+    const currentSession = await findSessionById(
+      validatedRefreshToken.sessionId,
+    );
 
-  if (!currentSession?.valid) throw new UnauthorizedError();
+    if (!currentSession?.valid) throw new UnauthorizedError();
 
-  const user = await findUserById(currentSession.userId);
-  if (!user) throw new UnauthorizedError();
+    const user = await findUserById(currentSession.userId);
+    if (!user) throw new UnauthorizedError();
 
-  await logUserIn({
-    jwt,
-    accessToken,
-    refreshToken,
-    sessionId: currentSession.id,
-    userId: user.id,
-  });
+    logUserIn({
+      accessToken,
+      refreshToken,
+      sessionId: currentSession.id,
+      userId: user.id,
+    });
 
-  return user;
+    return user;
+  } catch {
+    throw new UnauthorizedError();
+  }
 }
 
 export function createVerifyEmailToken(email: string, userId: number) {

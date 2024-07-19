@@ -13,18 +13,18 @@ export const auth = new Elysia({
   .use(setup)
   .derive(
     { as: "global" },
-    async ({ cookie: { accessToken, refreshToken }, jwt }) => {
+    async ({ cookie: { accessToken, refreshToken } }) => {
       try {
         if (accessToken.value) {
-          const userId = await getUserFromAccessToken(accessToken, jwt);
+          const userId = getUserFromAccessToken(accessToken);
 
           return { user: null, userId };
         }
 
-        const user = await refreshTokens({ jwt, accessToken, refreshToken });
+        const user = await refreshTokens({ accessToken, refreshToken });
         return { user, userId: user.id };
-      } catch (err) {
+      } catch {
         throw new UnauthorizedError();
       }
-    }
+    },
   );

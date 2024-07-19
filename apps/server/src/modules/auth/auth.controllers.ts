@@ -1,5 +1,7 @@
 import { Elysia } from "elysia";
+import { verify } from "jsonwebtoken";
 
+import { env } from "#config/env";
 import { HTTPError } from "#errors/http-error";
 import { UnauthorizedError } from "#errors/unauthorized-error";
 import { auth } from "#middlewares/auth.middleware";
@@ -35,7 +37,6 @@ export const authControllers = new Elysia({
       body,
       ip,
       headers,
-      jwt,
       set,
       cookie: { accessToken, refreshToken },
     }) => {
@@ -47,8 +48,7 @@ export const authControllers = new Elysia({
 
       sendVerifyEmailLink(email, userId);
 
-      await logUserIn({
-        jwt,
+      logUserIn({
         accessToken,
         refreshToken,
         sessionId,
@@ -68,13 +68,7 @@ export const authControllers = new Elysia({
 
   .post(
     "/authorize",
-    async ({
-      body,
-      ip,
-      headers,
-      jwt,
-      cookie: { accessToken, refreshToken },
-    }) => {
+    async ({ body, ip, headers, cookie: { accessToken, refreshToken } }) => {
       const userId = await authorizeUser(body);
 
       const { id: sessionId } = await createSession(userId, {
@@ -82,8 +76,7 @@ export const authControllers = new Elysia({
         userAgent: headers["user-agent"] || "",
       });
 
-      await logUserIn({
-        jwt,
+      logUserIn({
         accessToken,
         refreshToken,
         sessionId,
@@ -105,13 +98,15 @@ export const authControllers = new Elysia({
 
   .post(
     "/logout",
-    async ({ cookie: { refreshToken, accessToken }, jwt }) => {
-      const decodedRefreshToken = await jwt.verify(refreshToken.value);
-      if (!decodedRefreshToken) throw new UnauthorizedError();
+    async ({ cookie: { refreshToken, accessToken } }) => {
+      try {
+        const decodedRefreshToken = verify(refreshToken.value, env.JWT_SECRET);
+        await logoutUser(decodedRefreshToken, accessToken, refreshToken);
 
-      await logoutUser(decodedRefreshToken, accessToken, refreshToken);
-
-      return "Logged out successfully!";
+        return "Logged out successfully!";
+      } catch {
+        throw new UnauthorizedError();
+      }
     },
     {
       detail: {

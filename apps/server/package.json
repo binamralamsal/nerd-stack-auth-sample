@@ -17,15 +17,13 @@
   },
   "dependencies": {
     "@elysiajs/cors": "^1.0.4",
-    "@elysiajs/jwt": "^1.0.2",
     "@elysiajs/swagger": "^1.0.5",
     "@otherguy/elysia-logging": "^0.0.17",
+    "@repo/email": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/email": "workspace:*",
     "@t3-oss/env-core": "^0.10.1",
     "@types/node": "^20.14.10",
-    "resend": "^3.4.0",
     "bun-types": "^1.1.18",
     "drizzle-orm": "^0.31.4",
     "elysia": "^1.0.27",
@@ -33,12 +31,15 @@
     "elysia-helmet": "^2.0.0",
     "elysia-ip": "^1.0.7",
     "elysia-rate-limit": "^4.1.0",
+    "jsonwebtoken": "^9.0.2",
     "pino": "^9.2.0",
     "pino-pretty": "^11.2.1",
     "postgres": "^3.4.4",
+    "resend": "^3.4.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.6",
     "drizzle-kit": "^0.22.8",
     "typescript": "^5.5.3"
   }
