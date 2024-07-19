@@ -2,6 +2,9 @@
 
 import { api } from "@repo/api/client";
 import { Button } from "@repo/ui/button";
+import { Input } from "@repo/ui/input";
+import { Label } from "@repo/ui/label";
+import { toast } from "@repo/ui/sonner";
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 
@@ -11,6 +14,8 @@ export default function HomePage() {
   const [registerName, setRegisterName] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
+  const [changeOldPassword, setChangeOldPassword] = useState("");
+  const [changeNewPassword, setChangeNewPassword] = useState("");
 
   async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,9 +26,9 @@ export default function HomePage() {
     });
 
     if (error) {
-      console.error(error);
+      toast.error(error.message);
     } else {
-      console.log(data);
+      toast.success(data.message);
     }
   }
 
@@ -37,9 +42,24 @@ export default function HomePage() {
     });
 
     if (error) {
-      console.error(error);
+      toast.error(error.message);
     } else {
-      console.log(data);
+      toast.success(data);
+    }
+  }
+
+  async function handleChangePassword(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const { data, error } = await api.auth["change-password"].post({
+      oldPassword: changeOldPassword,
+      newPassword: changeNewPassword,
+    });
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(data);
     }
   }
 
@@ -47,9 +67,9 @@ export default function HomePage() {
     const { data, error } = await api.auth.logout.post();
 
     if (error) {
-      console.error(error);
+      toast.error(error.message);
     } else {
-      console.log(data);
+      toast.success(data);
     }
   }
 
@@ -57,9 +77,9 @@ export default function HomePage() {
     const { data, error } = await api.auth.me.get();
 
     if (error) {
-      console.error(error);
+      toast.error(error.message);
     } else {
-      console.log(data);
+      toast.success(data);
     }
   }
 
@@ -70,76 +90,111 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center space-y-5 bg-gray-100">
       <form
-        className="bg-white p-6 rounded shadow-md w-full max-w-md mb-8"
+        className="w-full max-w-md rounded bg-white p-6 shadow-md"
         onSubmit={handleLogin}
       >
-        <h2 className="text-2xl font-bold mb-4">Login</h2>
-        <label className="block mb-2">
-          Email:
-          <input
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+        <h2 className="mb-4 text-2xl font-bold">Login</h2>
+        <div className="mb-4 grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="loginEmail">Email</Label>
+          <Input
+            id="loginEmail"
             onChange={handleChange(setLoginEmail)}
+            placeholder="Email"
             required
             type="email"
             value={loginEmail}
           />
-        </label>
-        <label className="block mb-4">
-          Password:
-          <input
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+        </div>
+        <div className="mb-4 grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="loginPassword">Password</Label>
+          <Input
+            id="loginPassword"
             onChange={handleChange(setLoginPassword)}
+            placeholder="Password"
             required
             type="password"
             value={loginPassword}
           />
-        </label>
-        <Button className="w-full" size="lg">
+        </div>
+        <Button className="w-full" size="lg" type="submit">
           Login
         </Button>
       </form>
 
-      <hr className="w-full max-w-md my-8" />
-
       <form
-        className="bg-white p-6 rounded shadow-md w-full max-w-md mb-8"
+        className="w-full max-w-md rounded bg-white p-6 shadow-md"
         onSubmit={handleRegister}
       >
-        <h2 className="text-2xl font-bold mb-4">Register</h2>
-        <label className="block mb-2">
-          Name:
-          <input
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+        <h2 className="mb-4 text-2xl font-bold">Register</h2>
+        <div className="mb-4 grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="registerName">Name</Label>
+          <Input
+            id="registerName"
             onChange={handleChange(setRegisterName)}
+            placeholder="Name"
             required
             type="text"
             value={registerName}
           />
-        </label>
-        <label className="block mb-2">
-          Email:
-          <input
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+        </div>
+        <div className="mb-4 grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="registerEmail">Email</Label>
+          <Input
+            id="registerEmail"
             onChange={handleChange(setRegisterEmail)}
+            placeholder="Email"
             required
             type="email"
             value={registerEmail}
           />
-        </label>
-        <label className="block mb-4">
-          Password:
-          <input
-            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+        </div>
+        <div className="mb-4 grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="registerPassword">Password</Label>
+          <Input
+            id="registerPassword"
             onChange={handleChange(setRegisterPassword)}
+            placeholder="Password"
             required
             type="password"
             value={registerPassword}
           />
-        </label>
+        </div>
         <Button className="w-full" size="lg" type="submit">
           Register
+        </Button>
+      </form>
+
+      <form
+        className="w-full max-w-md rounded bg-white p-6 shadow-md"
+        onSubmit={handleChangePassword}
+      >
+        <h2 className="mb-4 text-2xl font-bold">Change Password</h2>
+        <div className="mb-4 grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="changeOldPassword">Old Password</Label>
+          <Input
+            id="changeOldPassword"
+            onChange={handleChange(setChangeOldPassword)}
+            placeholder="Old Password"
+            required
+            type="password"
+            value={changeOldPassword}
+          />
+        </div>
+        <div className="mb-4 grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="changeNewPassword">New Password</Label>
+          <Input
+            id="changeNewPassword"
+            onChange={handleChange(setChangeNewPassword)}
+            placeholder="New Password"
+            required
+            type="password"
+            value={changeNewPassword}
+          />
+        </div>
+        <Button className="w-full" size="lg" type="submit">
+          Change Password
         </Button>
       </form>
 

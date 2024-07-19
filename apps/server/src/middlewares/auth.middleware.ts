@@ -17,6 +17,7 @@ export const auth = new Elysia({
       try {
         if (accessToken.value) {
           const userId = await getUserFromAccessToken(accessToken, jwt);
+
           return { user: null, userId };
         }
 

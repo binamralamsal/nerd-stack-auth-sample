@@ -14,12 +14,11 @@
     "dist"
   ],
   "exports": {
-    "./card": "./src/card.tsx",
     "./styles.css": "./dist/styles.css",
-    "./*": [
-      "./src/components/*.tsx",
-      "./src/components/*.ts"
-    ]
+    "./button": "./src/button.tsx",
+    "./input": "./src/input.tsx",
+    "./label": "./src/label.tsx",
+    "./sonner": "./src/sonner.tsx"
   },
   "license": "MIT",
   "scripts": {
@@ -29,13 +28,13 @@
     "dev": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch"
   },
   "peerDependencies": {
-    "react": "^18.2.0"
+    "react": "^19.0.0-rc-512b09b2-20240718"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/tailwind-config": "*",
     "@repo/typescript-config": "*",
-    "@types/react": "^18.3.3",
+    "@types/react": "^18",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.6",

@@ -33,7 +33,7 @@
     "@repo/typescript-config": "*",
     "@repo/api": "*",
     "@types/node": "^20.14.11",
-    "@types/react": "^18.3.3",
+    "@types/react": "^18",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.39",

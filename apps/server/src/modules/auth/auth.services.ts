@@ -1,15 +1,19 @@
 import crypto from "node:crypto";
 
 import type { JWTPayloadSpec } from "@elysiajs/jwt";
+import { VerifyEmailLink } from "@repo/email";
 import { and, eq } from "drizzle-orm";
 import type { Cookie } from "elysia";
 import postgres from "postgres";
 
 import { env } from "#config/env";
+import { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from "#constants";
 import { db } from "#drizzle/db";
 import { sessionsTable, usersTable } from "#drizzle/schema";
 import { HTTPError } from "#errors/http-error";
 import { UnauthorizedError } from "#errors/unauthorized-error";
+import { logger } from "#libs/pino";
+import { sendEmail } from "#services/send-email";
 import type { JWT } from "#types";
 
 import { accessTokenDTO, refreshTokenDTO } from "./auth.dtos";
@@ -17,12 +21,20 @@ import { accessTokenDTO, refreshTokenDTO } from "./auth.dtos";
 // eslint-disable-next-line import/no-named-as-default-member -- You can't destructure postgres directly
 const { PostgresError } = postgres;
 
+export function hashPassword(password: string) {
+  return Bun.password.hash(password);
+}
+
+export function verifyPassword(password: string, hashedPassword: string) {
+  return Bun.password.verify(password, hashedPassword);
+}
+
 export async function registerUser(data: {
   email: string;
   name: string;
   password: string;
 }) {
-  const hashedPassword = await Bun.password.hash(data.password);
+  const hashedPassword = await hashPassword(data.password);
 
   try {
     return (
@@ -48,22 +60,23 @@ export async function authorizeUser(data: { email: string; password: string }) {
     where: eq(usersTable.email, data.email),
   });
 
-  if (!currentUser) return { isAuthorized: false, userId: null } as const;
+  const errorMessage = "Invalid username or password";
 
-  const isAuthorized = await Bun.password.verify(
+  if (!currentUser) throw new HTTPError(errorMessage, 401);
+
+  const isAuthorized = await verifyPassword(
     data.password,
-    currentUser.password
+    currentUser.password,
   );
 
-  return {
-    isAuthorized,
-    userId: currentUser.id,
-  };
+  if (!isAuthorized) throw new HTTPError(errorMessage, 401);
+
+  return currentUser.id;
 }
 
 export async function createSession(
   userId: number,
-  connection: { ip: string; userAgent: string }
+  connection: { ip: string; userAgent: string },
 ) {
   const sessionToken = crypto.randomBytes(45).toString("hex");
 
@@ -93,33 +106,24 @@ export async function logUserIn({
   sessionId: number;
   userId: number;
 }) {
-  const SECONDS_PER_MINUTE = 60;
-  const MINUTES_PER_HOUR = 60;
-  const HOURS_PER_DAY = 24;
-  const DAYS_PER_MONTH = 30;
-
-  const accessTokenExpiry = SECONDS_PER_MINUTE;
-  const refreshTokenExpiry =
-    DAYS_PER_MONTH * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
-
   accessToken.set({
     value: await jwt.sign({
       sessionId,
       userId,
-      exp: accessTokenExpiry,
+      exp: ACCESS_TOKEN_EXPIRY,
     }),
-    maxAge: accessTokenExpiry,
+    maxAge: ACCESS_TOKEN_EXPIRY,
   });
   refreshToken.set({
-    value: await jwt.sign({ sessionId, exp: refreshTokenExpiry }),
-    maxAge: refreshTokenExpiry,
+    value: await jwt.sign({ sessionId, exp: REFRESH_TOKEN_EXPIRY }),
+    maxAge: REFRESH_TOKEN_EXPIRY,
   });
 }
 
 export async function logoutUser(
   refreshToken: Record<string, string | number> & JWTPayloadSpec,
   accessTokenCookie: Cookie<any>,
-  refreshTokenCookie: Cookie<any>
+  refreshTokenCookie: Cookie<any>,
 ) {
   const validatedRefreshToken = refreshTokenDTO.parse(refreshToken);
 
@@ -144,7 +148,7 @@ export function findSessionById(sessionId: number) {
 
 export async function getUserFromAccessToken(
   accessToken: Cookie<any>,
-  jwt: JWT
+  jwt: JWT,
 ) {
   const decodedAccessToken = await jwt.verify(accessToken.value);
 
@@ -215,4 +219,30 @@ export async function validateVerifyEmail({
     .update(usersTable)
     .set({ emailVerified: true })
     .where(and(eq(usersTable.id, userId), eq(usersTable.email, email)));
+}
+
+export function sendVerifyEmailLink(email: string, userId: number) {
+  const emailLink = createVerifyEmailLink(email, userId);
+  sendEmail({
+    from: "Auth Sample <binamralamsal@resend.dev>",
+    to: [email],
+    subject: "Verify your Email",
+    react: VerifyEmailLink({ url: emailLink }),
+  })
+    .then(({ data, error }) => {
+      if (data) return null;
+      if (error) throw new Error(error.message);
+    })
+    .catch(logger.error);
+}
+
+export async function changePassword(userId: number, newPassword: string) {
+  const hashedPassword = await hashPassword(newPassword);
+
+  return db
+    .update(usersTable)
+    .set({
+      password: hashedPassword,
+    })
+    .where(eq(usersTable.id, userId));
 }

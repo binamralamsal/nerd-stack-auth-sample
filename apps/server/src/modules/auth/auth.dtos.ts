@@ -1,32 +1,38 @@
 import { t } from "elysia";
 import { z } from "zod";
 
-export const authorizeUserValidator = t.Object({
-  email: t.String({
-    format: "email",
-    minLength: 1,
-  }),
-  password: t.String({
-    minLength: 8,
-  }),
+const passwordDTO = t.String({
+  minLength: 8,
 });
 
-export const verifyUserValidator = t.Object({
-  email: t.String({
-    format: "email",
-    minLength: 1,
-  }),
+const emailDTO = t.String({
+  format: "email",
+  minLength: 1,
+});
+
+export const authorizeUserDTO = t.Object({
+  email: emailDTO,
+  password: passwordDTO,
+});
+
+export const verifyUserDTO = t.Object({
+  email: emailDTO,
   token: t.String({
     minLength: 1,
   }),
 });
 
-export const registerUserValidator = t.Composite([
-  authorizeUserValidator,
+export const registerUserDTO = t.Composite([
+  authorizeUserDTO,
   t.Object({
     name: t.String({ minLength: 1 }),
   }),
 ]);
+
+export const changePasswordDTO = t.Object({
+  oldPassword: passwordDTO,
+  newPassword: passwordDTO,
+});
 
 export const refreshTokenDTO = z.object({
   sessionId: z.number(),
