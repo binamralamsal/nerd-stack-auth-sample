@@ -10,6 +10,10 @@ const emailDTO = t.String({
   minLength: 1,
 });
 
+export const forgotPasswordDTO = t.Object({
+  email: emailDTO,
+});
+
 export const authorizeUserDTO = t.Object({
   email: emailDTO,
   password: passwordDTO,

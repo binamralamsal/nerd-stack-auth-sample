@@ -10,6 +10,7 @@ import { setup } from "#setup";
 import {
   authorizeUserDTO,
   changePasswordDTO,
+  forgotPasswordDTO,
   registerUserDTO,
   verifyUserDTO,
 } from "./auth.dtos";
@@ -115,6 +116,10 @@ export const authControllers = new Elysia({
     },
   )
 
+  .post("/forgot-password", async ({ body: { email } }) => {}, {
+    body: forgotPasswordDTO,
+  })
+
   .use(auth)
   .post(
     "/verify",
@@ -130,7 +135,7 @@ export const authControllers = new Elysia({
   .get("/me", () => "Hello you")
   .post(
     "/change-password",
-    async ({ body: { newPassword, oldPassword }, user, userId }) => {
+    async ({ body: { newPassword, oldPassword }, user, userId, sessionId }) => {
       if (newPassword === oldPassword)
         throw new HTTPError("New password can't be same as old password", 400);
 
@@ -146,7 +151,7 @@ export const authControllers = new Elysia({
       if (!isAuthorized)
         throw new HTTPError("Old password that you entered is incorrect", 401);
 
-      await changePassword(userId, newPassword);
+      await changePassword(userId, newPassword, sessionId);
 
       return "Password changed successfully!";
     },

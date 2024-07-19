@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 
 import { VerifyEmailLink } from "@repo/email";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import type { Cookie } from "elysia";
 import { sign, verify, type JwtPayload } from "jsonwebtoken";
 import postgres from "postgres";
@@ -154,7 +154,7 @@ export function getUserFromAccessToken(accessToken: Cookie<any>) {
 
     const validatedAccessToken = accessTokenDTO.parse(decodedAccessToken);
 
-    return validatedAccessToken.userId;
+    return validatedAccessToken;
   } catch {
     throw new UnauthorizedError();
   }
@@ -187,7 +187,7 @@ export async function refreshTokens({
       userId: user.id,
     });
 
-    return user;
+    return { user, sessionId: currentSession.id };
   } catch {
     throw new UnauthorizedError();
   }
@@ -240,13 +240,23 @@ export function sendVerifyEmailLink(email: string, userId: number) {
     .catch(logger.error);
 }
 
-export async function changePassword(userId: number, newPassword: string) {
+export async function changePassword(
+  userId: number,
+  newPassword: string,
+  sessionId: number,
+) {
   const hashedPassword = await hashPassword(newPassword);
 
-  return db
+  await db
     .update(usersTable)
     .set({
       password: hashedPassword,
     })
     .where(eq(usersTable.id, userId));
+
+  await db
+    .delete(sessionsTable)
+    .where(
+      and(ne(sessionsTable.id, sessionId), eq(sessionsTable.userId, userId)),
+    );
 }

@@ -16,6 +16,7 @@ export default function HomePage() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [changeOldPassword, setChangeOldPassword] = useState("");
   const [changeNewPassword, setChangeNewPassword] = useState("");
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 
   async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -75,6 +76,16 @@ export default function HomePage() {
 
   async function handleGetMe() {
     const { data, error } = await api.auth.me.get();
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(data);
+    }
+  }
+
+  async function handleForgotPassword() {
+    const { data, error } = await api.auth.logout.post();
 
     if (error) {
       toast.error(error.message);
@@ -195,6 +206,27 @@ export default function HomePage() {
         </div>
         <Button className="w-full" size="lg" type="submit">
           Change Password
+        </Button>
+      </form>
+
+      <form
+        className="w-full max-w-md rounded bg-white p-6 shadow-md"
+        onSubmit={handleForgotPassword}
+      >
+        <h2 className="mb-4 text-2xl font-bold">Forgot Password</h2>
+        <div className="mb-4 grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="forgotPasswordEmail">Email</Label>
+          <Input
+            id="forgotPasswordEmail"
+            onChange={handleChange(setForgotPasswordEmail)}
+            placeholder="email@website.com"
+            required
+            type="email"
+            value={forgotPasswordEmail}
+          />
+        </div>
+        <Button className="w-full" size="lg" type="submit">
+          Send Reset Password Email
         </Button>
       </form>
 

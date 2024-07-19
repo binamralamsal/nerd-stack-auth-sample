@@ -16,13 +16,16 @@ export const auth = new Elysia({
     async ({ cookie: { accessToken, refreshToken } }) => {
       try {
         if (accessToken.value) {
-          const userId = getUserFromAccessToken(accessToken);
+          const { userId, sessionId } = getUserFromAccessToken(accessToken);
 
-          return { user: null, userId };
+          return { user: null, userId, sessionId };
         }
 
-        const user = await refreshTokens({ accessToken, refreshToken });
-        return { user, userId: user.id };
+        const { user, sessionId } = await refreshTokens({
+          accessToken,
+          refreshToken,
+        });
+        return { user, sessionId, userId: user.id };
       } catch {
         throw new UnauthorizedError();
       }
